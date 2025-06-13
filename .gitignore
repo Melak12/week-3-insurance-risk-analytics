@@ -1,0 +1,17 @@
+# Data folder
+data/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Any CSV files
+.csv
+
+# Python virtual environment
+.venv/
+
+# Any python cache files
+__pycache__/
+
+# Environment variables
+.env
