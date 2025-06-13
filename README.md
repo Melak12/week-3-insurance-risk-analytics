@@ -10,6 +10,10 @@ Your employer AlphaCare Insurance Solutions (ACIS) is committed to developing cu
 
 The historical data is from Feb 2014 to Aug 2015.
 
+### Insurance Terminologies
+
+Check out the key insurance glossary [50 Common Insurance Terms and What They Mean — Cornerstone Insurance Brokers](https://www.cornerstoneinsurancebrokers.com/blog/common-insurance-terms)
+
 ## Setup
 1. Clone: `git clone https://github.com/Melak12/week-3-insurance-risk-analytics.git`
 2. Create venv: `python3 -m venv .venv`
