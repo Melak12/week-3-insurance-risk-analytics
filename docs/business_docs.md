@@ -37,3 +37,5 @@ At the outset of any predictive analytics build, three core elements need to be 
 
 #### 4. Prescriptive Analytics
 Prescriptive analytics is the fourth, and final pillar of modern analytics. Prescriptive analytics pertains to true guided analytics where your analytics is prescribing or guiding you toward a specific action to take. It is effectively the merging of descriptive, diagnostic, and predictive analytics to drive decision making.
+
+- Prescriptive anallystics primary aim is to take the educated guess or assessment out of data analystics and streamline the decision-making process
