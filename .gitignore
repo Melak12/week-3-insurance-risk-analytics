@@ -15,3 +15,6 @@ __pycache__/
 
 # Environment variables
 .env
+
+# Any co-pilot instruction files
+copilot-instructions.md
