@@ -10,6 +10,14 @@ Your employer AlphaCare Insurance Solutions (ACIS) is committed to developing cu
 
 The historical data is from Feb 2014 to Aug 2015.
 
+### Keywords
+
+1. **Premiums**: When you purchase an insurance policy, you'll be required to make regular payments, known as premiums. These payments are typically made monthly or annually and are the cost of maintaining your insurance coverage.
+2. **Total Claim**: A claim is a formal request to your insurance company for coverage or reimbursement for a loss or damage. It's essential to follow the claims process outlined in your policy.
+3. **No-Claims Discount**: Many insurance companies offer a no-claims discount to policyholders who haven't filed any claims within a specified period. This can lead to lower premiums over time.
+4. **Deductible/Excess**: This is the amount of money you're responsible for paying out-of-pocket on a claim before your insurance coverage starts to pay. For example, if you have a $500 deductible and your car sustains $2,000 in damage, you'd pay the first $500, and your insurer would cover the remaining $1,500.
+5. **Underwriting**: Underwriting is the process insurance companies use to assess the risk of insuring you or your property. It involves evaluating factors like your driving history, location, and the type of car you own to determine if the company will offer you coverage and at what premium.
+
 ### Insurance Terminologies
 
 Check out the key insurance glossary [50 Common Insurance Terms and What They Mean — Cornerstone Insurance Brokers](https://www.cornerstoneinsurancebrokers.com/blog/common-insurance-terms)
