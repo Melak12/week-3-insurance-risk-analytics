@@ -96,39 +96,38 @@ class InsuranceAnalysis:
         self.convert_to_datetime('VehicleIntroDate')
         self.convert_to_datetime('TransactionMonth')
 
-        # Work on a copy to avoid modifying the original data
-        cleaned_data = self.data.copy()
+        
 
         # Drop columns with more than 30% missing values
-        threshold = 0.3 * len(cleaned_data)
-        cols_to_drop = [col for col in cleaned_data.columns if cleaned_data[col].isnull().sum() > threshold]
+        threshold = 0.3 * len(self.data)
+        cols_to_drop = [col for col in self.data.columns if self.data[col].isnull().sum() > threshold]
         if cols_to_drop:
             print(f"Dropping columns with >30% missing values: {cols_to_drop}")
-            cleaned_data.drop(columns=cols_to_drop, inplace=True)
+            self.data.drop(columns=cols_to_drop, inplace=True)
 
         # Impute missing values for categorical columns (mode) and numerical columns (median)
-        for col in cleaned_data.columns:
-            if cleaned_data[col].isnull().any():
-                if cleaned_data[col].dtype == 'object':
-                    mode_val = cleaned_data[col].mode(dropna=True)
+        for col in self.data.columns:
+            if self.data[col].isnull().any():
+                if self.data[col].dtype == 'object':
+                    mode_val = self.data[col].mode(dropna=True)
                     if not mode_val.empty:
-                        cleaned_data[col] = cleaned_data[col].fillna(mode_val[0])
+                        self.data[col] = self.data[col].fillna(mode_val[0])
                         print(f"Filled missing values in {col} with mode: {mode_val[0]}")
                     else:
                         print(f"No mode found for {col}, leaving missing values as is.")
                 else:
-                    median_val = cleaned_data[col].median()
-                    cleaned_data[col] = cleaned_data[col].fillna(median_val)
+                    median_val = self.data[col].median()
+                    self.data[col] = self.data[col].fillna(median_val)
                     print(f"Filled missing values in {col} with median: {median_val}")
 
         # Remove duplicate entries
-        if cleaned_data.duplicated().any():
+        if self.data.duplicated().any():
             print("Removing duplicate rows...")
-            cleaned_data.drop_duplicates(inplace=True)
+            self.data.drop_duplicates(inplace=True)
             print("Duplicate rows removed.")
 
         # Return the cleaned DataFrame
-        return cleaned_data
+        return self.data
     
     def export_cleaned_data(self, output_path):
         # Export the cleaned data to a new file
