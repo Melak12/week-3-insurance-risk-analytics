@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 
 ## This script provides Exploratory Data Analysis (EDA) for insurance data which is located in the ../data/MachineLearningRating_v3.txt file. The following are key functionalities:
@@ -95,36 +96,39 @@ class InsuranceAnalysis:
         self.convert_to_datetime('VehicleIntroDate')
         self.convert_to_datetime('TransactionMonth')
 
+        # Work on a copy to avoid modifying the original data
+        cleaned_data = self.data.copy()
+
         # Drop columns with more than 30% missing values
-        threshold = 0.3 * len(self.data)
-        cols_to_drop = [col for col in self.data.columns if self.data[col].isnull().sum() > threshold]
+        threshold = 0.3 * len(cleaned_data)
+        cols_to_drop = [col for col in cleaned_data.columns if cleaned_data[col].isnull().sum() > threshold]
         if cols_to_drop:
             print(f"Dropping columns with >30% missing values: {cols_to_drop}")
-            self.data.drop(columns=cols_to_drop, inplace=True)
+            cleaned_data.drop(columns=cols_to_drop, inplace=True)
 
         # Impute missing values for categorical columns (mode) and numerical columns (median)
-        for col in self.data.columns:
-            if self.data[col].isnull().any():
-                if self.data[col].dtype == 'object':
-                    # For categorical columns, fill with mode
-                    mode_val = self.data[col].mode(dropna=True)
+        for col in cleaned_data.columns:
+            if cleaned_data[col].isnull().any():
+                if cleaned_data[col].dtype == 'object':
+                    mode_val = cleaned_data[col].mode(dropna=True)
                     if not mode_val.empty:
-                        self.data[col] = self.data[col].fillna(mode_val[0])
+                        cleaned_data[col] = cleaned_data[col].fillna(mode_val[0])
                         print(f"Filled missing values in {col} with mode: {mode_val[0]}")
                     else:
                         print(f"No mode found for {col}, leaving missing values as is.")
                 else:
-                    # For numerical columns, fill with median
-                    median_val = self.data[col].median()
-                    self.data[col] = self.data[col].fillna(median_val)
+                    median_val = cleaned_data[col].median()
+                    cleaned_data[col] = cleaned_data[col].fillna(median_val)
                     print(f"Filled missing values in {col} with median: {median_val}")
 
-        # Check for and remove duplicate entries
-        if self.data.duplicated().any():
+        # Remove duplicate entries
+        if cleaned_data.duplicated().any():
             print("Removing duplicate rows...")
-            self.data.drop_duplicates(inplace=True)
+            cleaned_data.drop_duplicates(inplace=True)
             print("Duplicate rows removed.")
 
+        # Return the cleaned DataFrame
+        return cleaned_data
     
     def export_cleaned_data(self, output_path):
         # Export the cleaned data to a new file
@@ -141,4 +145,51 @@ class InsuranceAnalysis:
             print(duplicates)
         else:
             print("No duplicate rows found.")
+    
+    def univariate_analysis(self, save_plots=False, output_dir=None, num_cols=None, cat_cols=None):
+        """
+        Plots histograms for up to 5 key numerical columns and bar charts for up to 5 key categorical columns to understand distributions.
+        If save_plots is True, saves plots to output_dir; otherwise, displays them.
+        Optionally, you can specify which columns to plot using num_cols and cat_cols.
+        """
+        # Select up to 5 numerical columns
+        if num_cols is None:
+            num_cols = self.data.select_dtypes(include=['int64', 'float64']).columns[:5]
+        else:
+            num_cols = [col for col in num_cols if col in self.data.columns][:5]
+        # Select up to 5 categorical columns
+        if cat_cols is None:
+            cat_cols = self.data.select_dtypes(include=['object', 'category']).columns[:5]
+        else:
+            cat_cols = [col for col in cat_cols if col in self.data.columns][:5]
+
+        # Plot histograms for numerical columns
+        for col in num_cols:
+            plt.figure(figsize=(7, 4))
+            sns.histplot(self.data[col].dropna(), kde=True, bins=30, color='skyblue')
+            plt.title(f'Distribution of {col}')
+            plt.xlabel(col)
+            plt.ylabel('Frequency')
+            plt.tight_layout()
+            if save_plots and output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+                plt.savefig(os.path.join(output_dir, f"hist_{col}.png"))
+                plt.close()
+            else:
+                plt.show()
+
+        # Plot bar charts for categorical columns
+        for col in cat_cols:
+            plt.figure(figsize=(8, 4))
+            self.data[col].value_counts(dropna=False).plot(kind='bar', color='orange')
+            plt.title(f'Bar Chart of {col}')
+            plt.xlabel(col)
+            plt.ylabel('Count')
+            plt.tight_layout()
+            if save_plots and output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+                plt.savefig(os.path.join(output_dir, f"bar_{col}.png"))
+                plt.close()
+            else:
+                plt.show()
 
