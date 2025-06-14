@@ -191,4 +191,62 @@ class InsuranceAnalysis:
                 plt.close()
             else:
                 plt.show()
+    
+    def bivariate_multivariate_analysis(self, save_plots=False, output_dir=None):
+        """
+        Explore relationships between the monthly changes in TotalPremium and TotalClaims as a function of ZipCode,
+        using scatter plots and correlation matrices.
+        """
+        # Check required columns
+        required_cols = ['TransactionMonth', 'PostalCode', 'TotalPremium', 'TotalClaims']
+        for col in required_cols:
+            if col not in self.data.columns:
+                print(f"Column '{col}' not found in data. Skipping bivariate/multivariate analysis.")
+                return
+
+        # Ensure TransactionMonth is datetime
+        if not pd.api.types.is_datetime64_any_dtype(self.data['TransactionMonth']):
+            self.data['TransactionMonth'] = pd.to_datetime(self.data['TransactionMonth'], errors='coerce')
+
+        # Group by PostalCode and TransactionMonth, then sum premiums and claims
+        grouped = self.data.groupby(['PostalCode', 'TransactionMonth']).agg({
+            'TotalPremium': 'sum',
+            'TotalClaims': 'sum'
+        }).reset_index()
+
+        # Calculate monthly changes (diff) per PostalCode
+        grouped = grouped.sort_values(['PostalCode', 'TransactionMonth'])
+        grouped['PremiumChange'] = grouped.groupby('PostalCode')['TotalPremium'].diff()
+        grouped['ClaimChange'] = grouped.groupby('PostalCode')['TotalClaims'].diff()
+
+        # Scatter plot: PremiumChange vs ClaimChange, colored by PostalCode
+        plt.figure(figsize=(10, 6))
+        sns.scatterplot(
+            data=grouped.dropna(subset=['PremiumChange', 'ClaimChange']),
+            x='PremiumChange', y='ClaimChange', hue='PostalCode', palette='tab20', legend=False
+        )
+        plt.title('Monthly Change: TotalPremium vs TotalClaims by PostalCode')
+        plt.xlabel('Monthly Change in TotalPremium')
+        plt.ylabel('Monthly Change in TotalClaims')
+        plt.tight_layout()
+        if save_plots and output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            plt.savefig(os.path.join(output_dir, 'scatter_premium_claim_change_by_postalcode.png'))
+            plt.close()
+        else:
+            plt.show()
+
+        # Correlation matrix for numerical columns
+        corr_cols = ['TotalPremium', 'TotalClaims', 'PremiumChange', 'ClaimChange']
+        corr_data = grouped[corr_cols].dropna()
+        corr_matrix = corr_data.corr()
+        plt.figure(figsize=(7, 5))
+        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+        plt.title('Correlation Matrix: Premiums, Claims, and Their Changes')
+        plt.tight_layout()
+        if save_plots and output_dir:
+            plt.savefig(os.path.join(output_dir, 'correlation_matrix.png'))
+            plt.close()
+        else:
+            plt.show()
 
