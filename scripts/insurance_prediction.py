@@ -5,6 +5,7 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
+from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score
 
 '''
 This script is used to build and evaluate predictive models that form the core of a dynamic, risk-based pricing system.
@@ -149,3 +150,75 @@ class InsurancePredictionModel:
         model = XGBRegressor(n_estimators=n_estimators, random_state=random_state, verbosity=0)
         model.fit(X_train, y_train)
         return model
+
+    def evaluate_regression(self, model, X_test, y_test):
+        """
+        Evaluate regression model using RMSE, R2, and Accuracy (%).
+        Accuracy is reported as R2 * 100.
+        """
+        y_pred = model.predict(X_test)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        r2 = r2_score(y_test, y_pred)
+        accuracy = r2 * 100  # R2 as percent
+        return {'RMSE': rmse, 'R2': r2, 'Accuracy (%)': accuracy}
+
+    def evaluate_classification(self, model, X_test, y_test, average='binary'):
+        """
+        Evaluate classification model using accuracy, precision, recall, and F1-score.
+        """
+        y_pred = model.predict(X_test)
+        acc = accuracy_score(y_test, y_pred)
+        prec = precision_score(y_test, y_pred, average=average, zero_division=0)
+        rec = recall_score(y_test, y_pred, average=average, zero_division=0)
+        f1 = f1_score(y_test, y_pred, average=average, zero_division=0)
+        return {'Accuracy': acc, 'Precision': prec, 'Recall': rec, 'F1': f1}
+
+    def evaluate_model(self, model, X_test, y_test, task='auto', average='binary'):
+        """
+        Evaluate model using appropriate metrics. If task='auto', infers regression/classification from y_test dtype.
+        """
+        if task == 'auto':
+            if y_test.nunique() <= 10 and y_test.dtype in [int, bool, np.int32, np.int64]:
+                task = 'classification'
+            else:
+                task = 'regression'
+        if task == 'regression':
+            return self.evaluate_regression(model, X_test, y_test)
+        else:
+            return self.evaluate_classification(model, X_test, y_test, average=average)
+
+"""
+Example usage:
+
+from scripts.insurance_prediction import InsurancePredictionModel
+
+# Initialize and prepare data
+model = InsurancePredictionModel('../data/MachineLearningRating_v3.txt')
+model.handle_missing_data()
+model.feature_engineering()
+model.encode_categorical(onehot_cols=['Province', 'CoverType'])
+
+# For regression (e.g., claim severity prediction)
+X_train, X_test, y_train, y_test = model.train_test_split(target='TotalClaims')
+
+# Linear Regression
+lr = model.fit_linear_regression(X_train, y_train)
+lr_eval = model.evaluate_model(lr, X_test, y_test, task='regression')
+print('Linear Regression:', lr_eval)
+
+# Random Forest
+rf = model.fit_random_forest(X_train, y_train)
+rf_eval = model.evaluate_model(rf, X_test, y_test, task='regression')
+print('Random Forest:', rf_eval)
+
+# XGBoost
+xgb = model.fit_xgboost(X_train, y_train)
+xgb_eval = model.evaluate_model(xgb, X_test, y_test, task='regression')
+print('XGBoost:', xgb_eval)
+
+# For classification (e.g., claim occurrence)
+# X_train, X_test, y_train, y_test = model.train_test_split(target='ClaimFrequency')
+# rf = model.fit_random_forest(X_train, y_train)
+# rf_eval = model.evaluate_model(rf, X_test, y_test, task='classification')
+# print('Random Forest (Classification):', rf_eval)
+"""
