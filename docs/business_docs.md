@@ -39,3 +39,69 @@ At the outset of any predictive analytics build, three core elements need to be 
 Prescriptive analytics is the fourth, and final pillar of modern analytics. Prescriptive analytics pertains to true guided analytics where your analytics is prescribing or guiding you toward a specific action to take. It is effectively the merging of descriptive, diagnostic, and predictive analytics to drive decision making.
 
 - Prescriptive anallystics primary aim is to take the educated guess or assessment out of data analystics and streamline the decision-making process
+
+## Dataset Information
+- Columns about the insurance policy
+    - UnderwrittenCoverID
+    - PolicyID
+    - TransactionMonth
+- Columns about the client
+    - IsVATRegistered
+    - Citizenship
+    - LegalType
+    - Title
+    - Language
+    - Bank
+    - AccountType
+    - MaritalStatus
+    - Gender
+
+- Columns about the client location
+    - Country
+    - Province
+    - PostalCode
+    - MainCrestaZone
+    - SubCrestaZone
+
+- Columns about the car insured
+    - ItemType
+    - Mmcode
+    - VehicleType
+    - RegistrationYear
+    - make
+    - Model
+    - Cylinders
+    - Cubiccapacity
+    - Kilowatts
+    - Bodytype
+    - NumberOfDoors
+    - VehicleIntroDate
+    - CustomValueEstimate
+    - AlarmImmobiliser
+    - TrackingDevice
+    - CapitalOutstanding
+    - NewVehicle
+    - WrittenOff
+    - Rebuilt
+    - Converted
+    - CrossBorder
+    - NumberOfVehiclesInFleet
+
+- Columns about the plan
+    - SumInsured
+    - TermFrequency
+    - CalculatedPremiumPerTerm
+    - ExcessSelected
+    - CoverCategory
+    - CoverType
+    - CoverGroup
+    - Section
+    - Product
+    - StatutoryClass
+    - StatutoryRiskType
+
+- Columns about the plan
+    - TotalPremium
+    - TotalClaims
+
+---
