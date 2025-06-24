@@ -82,3 +82,37 @@ dvc repro
 - [Get Started with DVC](https://dvc.org/doc/start)
 
 ---
+
+## Project Structure
+
+The following is the structure of this project:
+
+```
+├── data.csv.dvc
+├── requirements.txt
+├── README.md
+├── data/
+│   ├── insurance_cleaned.csv
+│   └── MachineLearningRating_v3.txt
+├── docs/
+│   └── business_docs.md
+├── notebooks/
+│   ├── __init__.py
+│   ├── hypothesis.ipynb
+│   ├── insurance_eda.ipynb
+│   ├── predictive_model.ipynb
+│   └── README.md
+├── scripts/
+│   ├── __init__.py
+│   ├── hypothesis_testing.py
+│   ├── insurance_analysis.py
+│   ├── insurance_prediction.py
+│   ├── README_PREDICTION_MODEL.md
+│   ├── README.md
+│   └── __pycache__/
+│       ├── __init__.cpython-313.pyc
+│       ├── hypothesis_testing.cpython-313.pyc
+│       ├── insurance_analysis.cpython-313.pyc
+│       └── insurance_prediction.cpython-313.pyc
+├── tests/
+```
