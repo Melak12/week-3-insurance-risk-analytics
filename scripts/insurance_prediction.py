@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 
 '''
 This script is used to build and evaluate predictive models that form the core of a dynamic, risk-based pricing system.
@@ -122,3 +125,27 @@ class InsurancePredictionModel:
         y = df[target]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
         return X_train, X_test, y_train, y_test
+
+    def fit_linear_regression(self, X_train, y_train):
+        """
+        Fit a Linear Regression model.
+        """
+        model = LinearRegression()
+        model.fit(X_train, y_train)
+        return model
+
+    def fit_random_forest(self, X_train, y_train, n_estimators=100, random_state=42):
+        """
+        Fit a Random Forest Regressor.
+        """
+        model = RandomForestRegressor(n_estimators=n_estimators, random_state=random_state)
+        model.fit(X_train, y_train)
+        return model
+
+    def fit_xgboost(self, X_train, y_train, n_estimators=100, random_state=42):
+        """
+        Fit an XGBoost Regressor.
+        """
+        model = XGBRegressor(n_estimators=n_estimators, random_state=random_state, verbosity=0)
+        model.fit(X_train, y_train)
+        return model
