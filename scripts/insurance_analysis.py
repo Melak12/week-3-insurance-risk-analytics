@@ -2,7 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-
+import plotly.express as px
+import ipywidgets as widgets
+from IPython.display import display
+import functools
 
 ## This script provides Exploratory Data Analysis (EDA) for insurance data which is located in the ../data/MachineLearningRating_v3.txt file. The following are key functionalities:
 # 1. Data Summarization
@@ -249,4 +252,79 @@ class InsuranceAnalysis:
             plt.close()
         else:
             plt.show()
+    
+    def compare_trends_over_geography(self, save_plots=False, output_dir=None):
+        """
+        Compare the change in insurance cover type, premium, and auto make across geographic columns.
+        Visualizes trends by geography and over time.
+        """
+        geo_cols = ['Country', 'Province', 'PostalCode', 'MainCrestaZone', 'SubCrestaZone']
+        time_col = 'TransactionMonth'
+        premium_col = 'TotalPremium'
+        cover_col = 'CoverType'
+        make_col = 'make'
+
+        # Check columns exist
+        for col in geo_cols + [time_col, premium_col, cover_col, make_col]:
+            if col not in self.data.columns:
+                print(f"Column '{col}' not found in data. Skipping some plots.")
+
+        # Ensure TransactionMonth is datetime
+        if time_col in self.data.columns and not pd.api.types.is_datetime64_any_dtype(self.data[time_col]):
+            self.data[time_col] = pd.to_datetime(self.data[time_col], errors='coerce')
+
+        # 1. Average TotalPremium and TotalClaims by geography and over time with dropdown
+        for geo in geo_cols:
+            if geo in self.data.columns and time_col in self.data.columns and premium_col in self.data.columns and 'TotalClaims' in self.data.columns:
+                self.data[time_col] = pd.to_datetime(self.data[time_col], errors='coerce')
+                avg_metrics = self.data.groupby([geo, time_col])[['TotalPremium', 'TotalClaims']].mean().reset_index()
+                geo_values = avg_metrics[geo].dropna().unique()
+                geo_values.sort()
+                def make_plot_geo(geo, avg_metrics):
+                    def plot_geo(selected_geo):
+                        data = avg_metrics[avg_metrics[geo] == selected_geo]
+                        fig = px.line(
+                            data.melt(id_vars=[time_col], value_vars=['TotalPremium', 'TotalClaims'], var_name='Metric', value_name='Average'),
+                            x=time_col, y='Average', color='Metric',
+                            title=f'Average TotalPremium and TotalClaims Over Time for {geo}: {selected_geo}'
+                        )
+                        fig.show()
+                    return plot_geo
+                dropdown = widgets.Dropdown(options=geo_values, value=geo_values[0], description=f'{geo}:')
+                print(f"Interactive time series for {geo}:")
+                display(widgets.interact(make_plot_geo(geo, avg_metrics), selected_geo=dropdown))
+
+        # 2. Distribution of CoverType by geography using dropdown
+        for geo in geo_cols:
+            if geo in self.data.columns and cover_col in self.data.columns:
+                cover_counts = self.data.groupby([geo, cover_col]).size().reset_index(name='Count')
+                geo_values = cover_counts[geo].dropna().unique()
+                geo_values.sort()
+                def make_plot_cover(geo, cover_counts):
+                    def plot_cover(selected_geo):
+                        data = cover_counts[cover_counts[geo] == selected_geo]
+                        fig = px.bar(data, x=cover_col, y='Count', color=cover_col,
+                                     title=f'Distribution of CoverType for {geo}: {selected_geo}')
+                        fig.show()
+                    return plot_cover
+                dropdown = widgets.Dropdown(options=geo_values, value=geo_values[0], description=f'{geo}:')
+                print(f"Interactive CoverType distribution for {geo}:")
+                display(widgets.interact(make_plot_cover(geo, cover_counts), selected_geo=dropdown))
+
+        # 3. Distribution of Make by geography using dropdown
+        for geo in geo_cols:
+            if geo in self.data.columns and make_col in self.data.columns:
+                make_counts = self.data.groupby([geo, make_col]).size().reset_index(name='Count')
+                geo_values = make_counts[geo].dropna().unique()
+                geo_values.sort()
+                def make_plot_make(geo, make_counts):
+                    def plot_make(selected_geo):
+                        data = make_counts[make_counts[geo] == selected_geo]
+                        fig = px.bar(data, x=make_col, y='Count', color=make_col,
+                                     title=f'Distribution of Auto Make for {geo}: {selected_geo}')
+                        fig.show()
+                    return plot_make
+                dropdown = widgets.Dropdown(options=geo_values, value=geo_values[0], description=f'{geo}:')
+                print(f"Interactive Auto Make distribution for {geo}:")
+                display(widgets.interact(make_plot_make(geo, make_counts), selected_geo=dropdown))
 
