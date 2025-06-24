@@ -60,6 +60,15 @@ class InsurancePredictionModel:
                     df[col] = df[col].fillna(median_val)
         self.df = df
         return df
+    
+    def check_missing_values(self):
+        # Show only columns with missing values
+        missing_values = self.df.isnull().sum()
+        #print total columns with missing values
+        print("\nTotal Columns with Missing Values:")
+        print(missing_values[missing_values > 0].count())
+        print("\nMissing Values:")
+        print(missing_values[missing_values > 0])
 
     def feature_engineering(self):
         """
@@ -76,14 +85,28 @@ class InsurancePredictionModel:
         self.df = df
         return df
 
-    def encode_categorical(self, encoding='onehot', drop_first=True):
+    def encode_categorical(self, encoding='onehot', drop_first=True, onehot_cols=None):
         """
         Convert categorical data into numeric format using one-hot or label encoding.
+        Only one-hot encode columns specified in onehot_cols (list of column names).
+        Label encode all other categorical columns.
         """
         df = self.df.copy()
+        # Convert boolean columns to int
+        bool_cols = df.select_dtypes(include=['bool']).columns
+        for col in bool_cols:
+            df[col] = df[col].astype(int)
         cat_cols = df.select_dtypes(include=['object', 'category']).columns
+        if onehot_cols is None:
+            onehot_cols = []
+        # Only keep columns that are actually categorical
+        onehot_cols = [col for col in onehot_cols if col in cat_cols]
+        label_cols = [col for col in cat_cols if col not in onehot_cols]
         if encoding == 'onehot':
-            df = pd.get_dummies(df, columns=cat_cols, drop_first=drop_first)
+            if onehot_cols:
+                df = pd.get_dummies(df, columns=onehot_cols, drop_first=drop_first)
+            for col in label_cols:
+                df[col] = LabelEncoder().fit_transform(df[col].astype(str))
         elif encoding == 'label':
             for col in cat_cols:
                 df[col] = LabelEncoder().fit_transform(df[col].astype(str))
