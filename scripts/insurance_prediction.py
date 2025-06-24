@@ -260,6 +260,58 @@ class InsurancePredictionModel:
             ax.set_facecolor('white')  # Set axes background to white
         plt.show()
 
+    def compare_models(self, results_dict, task='regression', metrics=None, plot_library='matplotlib'):
+        """
+        Compare performance of multiple models.
+        results_dict: dict of {model_name: metrics_dict} as returned by evaluate_model
+        task: 'regression' or 'classification'
+        metrics: list of metrics to compare (default: all in first model)
+        plot_library: 'matplotlib' (default) or 'plotly'
+        Returns: DataFrame of results and displays a bar plot for each metric.
+        """
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        try:
+            import plotly.graph_objects as go
+            plotly_available = True
+        except ImportError:
+            plotly_available = False
+        # Prepare DataFrame
+        df = pd.DataFrame(results_dict).T
+        if metrics is None:
+            metrics = df.columns.tolist()
+        df = df[metrics]
+        display_df = df.copy()
+        print('Model Comparison:')
+        print(display_df)
+        # Plot
+        for metric in metrics:
+            if plot_library == 'plotly' and plotly_available:
+                fig = go.Figure(go.Bar(
+                    x=df.index,
+                    y=df[metric],
+                    marker_color='#1f77b4'
+                ))
+                fig.update_layout(
+                    title=f'Model Comparison: {metric}',
+                    xaxis_title='Model',
+                    yaxis_title=metric,
+                    plot_bgcolor='white',
+                    paper_bgcolor='white',
+                    font=dict(color='black')
+                )
+                fig.show()
+            else:
+                plt.figure(figsize=(6, 4))
+                bars = plt.bar(df.index, df[metric], color='#1f77b4')
+                plt.title(f'Model Comparison: {metric}')
+                plt.xlabel('Model')
+                plt.ylabel(metric)
+                plt.grid(axis='y', linestyle='--', alpha=0.5)
+                plt.gca().set_facecolor('white')
+                plt.show()
+        return display_df
+
 """
 Example usage:
 
