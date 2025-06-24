@@ -18,3 +18,4 @@ __pycache__/
 
 # Any co-pilot instruction files
 copilot-instructions.md
+/data.csv

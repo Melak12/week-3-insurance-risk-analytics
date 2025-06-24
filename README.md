@@ -32,3 +32,53 @@ Note: if requirements.txt is missing, you might need to run this command
 `pip freeze > requirements.txt`
 
 ---
+
+## Data Version Control (DVC) Usage
+
+This project uses [DVC (Data Version Control)](https://dvc.org/) to manage large datasets and track data pipeline stages efficiently.
+
+### DVC Installation
+Install DVC using pip:
+```sh
+pip install dvc
+```
+
+### Initialize DVC in Your Project
+If not already initialized, run:
+```sh
+dvc init
+git commit -m "Initialize DVC"
+```
+
+### Adding Data to DVC
+To track your data files (e.g., in the `data/` directory):
+```sh
+dvc add data/MachineLearningRating_v3.txt
+git add data/MachineLearningRating_v3.txt.dvc .gitignore
+git commit -m "Track raw insurance data with DVC"
+```
+
+### Sharing Data
+To push your data to remote storage (e.g., Google Drive, S3, Azure):
+```sh
+dvc remote add -d myremote <remote-storage-url>
+dvc push
+```
+
+### Pulling Data
+To retrieve data tracked by DVC (after cloning the repo):
+```sh
+dvc pull
+```
+
+### Reproducing Pipelines
+If you use DVC pipelines (e.g., for data processing or modeling):
+```sh
+dvc repro
+```
+
+### More Information
+- [DVC Documentation](https://dvc.org/doc)
+- [Get Started with DVC](https://dvc.org/doc/start)
+
+---
