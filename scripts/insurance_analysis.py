@@ -328,3 +328,27 @@ class InsuranceAnalysis:
                 print(f"Interactive Auto Make distribution for {geo}:")
                 display(widgets.interact(make_plot_make(geo, make_counts), selected_geo=dropdown))
 
+    def outlier_detection(self, save_plots=False, output_dir=None, num_cols=None):
+        """
+        Use box plots to detect outliers in numerical data.
+        Plots box plots for up to 5 key numerical columns, or user-specified columns.
+        If save_plots is True, saves plots to output_dir; otherwise, displays them.
+        """
+        # Select up to 5 numerical columns
+        if num_cols is None:
+            num_cols = self.data.select_dtypes(include=['int64', 'float64']).columns[:5]
+        else:
+            num_cols = [col for col in num_cols if col in self.data.columns][:5]
+        for col in num_cols:
+            plt.figure(figsize=(7, 4))
+            sns.boxplot(x=self.data[col], color='lightcoral')
+            plt.title(f'Box Plot of {col}')
+            plt.xlabel(col)
+            plt.tight_layout()
+            if save_plots and output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+                plt.savefig(os.path.join(output_dir, f"boxplot_{col}.png"))
+                plt.close()
+            else:
+                plt.show()
+
