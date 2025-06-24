@@ -180,3 +180,104 @@ analyzer.creative_insight_plots()
 - Columns about the plan
     - TotalPremium
     - TotalClaims
+
+---
+
+# Hypothesis Testing Script Documentation
+
+This section documents the functionalities implemented in `hypothesis_testing.py`. The script provides modular functions for statistical hypothesis testing on insurance risk drivers, supporting A/B and group comparisons for business analytics and segmentation.
+
+---
+
+## Purpose
+- Statistically validate or reject key business hypotheses about risk drivers (e.g., province, zip code, gender) using cleaned insurance data.
+- Quantify risk using:
+  - **Claim Frequency:** Proportion of policies with at least one claim
+  - **Claim Severity:** Average amount of a claim, given a claim occurred
+  - **Margin:** Difference between TotalPremium and TotalClaims
+
+---
+
+## Main Functions
+
+### 1. `compute_metrics(df: pd.DataFrame) -> pd.DataFrame`
+- Adds the following columns to the DataFrame:
+  - `ClaimFrequency`: 1 if `TotalClaims` > 0, else 0
+  - `NumClaims`: 1 if `TotalClaims` > 0, else 0 (fallback if explicit count not available)
+  - `ClaimSeverity`: `TotalClaims` / `NumClaims` (if `NumClaims` > 0, else 0)
+  - `Margin`: `TotalPremium` - `TotalClaims`
+- **Usage:**
+```python
+from scripts.hypothesis_testing import compute_metrics
+df = compute_metrics(df)
+```
+
+### 2. `segment_data(df, feature, group_a, group_b) -> Tuple[DataFrame, DataFrame]`
+- Splits the DataFrame into two groups based on the values of a categorical feature.
+- **Usage:**
+```python
+group_a_df, group_b_df = segment_data(df, 'Province', 'Gauteng', 'Western Cape')
+```
+
+### 3. `t_test_metric(group_a, group_b, metric)`
+- Performs an independent t-test for a numerical metric between two groups.
+- Returns test statistic, p-value, and group means.
+- **Usage:**
+```python
+result = t_test_metric(group_a_df, group_b_df, 'ClaimSeverity')
+```
+
+### 4. `z_test_proportion(group_a, group_b, metric)`
+- Performs a z-test for proportions (e.g., claim frequency) between two groups.
+- Returns test statistic, p-value, and group proportions.
+- **Usage:**
+```python
+result = z_test_proportion(group_a_df, group_b_df, 'ClaimFrequency')
+```
+
+### 5. `chi2_test_categorical(df, feature, target)`
+- Performs a chi-squared test for independence between a categorical feature and a binary target.
+- Returns chi2 statistic, p-value, degrees of freedom, expected counts, and contingency table.
+- **Usage:**
+```python
+result = chi2_test_categorical(df, 'Province', 'ClaimFrequency')
+```
+
+### 6. `analyze_and_report(result, test_type, alpha=0.05)`
+- Interprets the result of a statistical test and returns a human-readable conclusion based on the p-value and significance level.
+- **Usage:**
+```python
+conclusion = analyze_and_report(result, 't-test')
+```
+
+### 7. `test_hypothesis(df, feature, group_a, group_b, metric, test_type='t-test', alpha=0.05)`
+- General workflow for hypothesis testing between two groups on a metric.
+- Selects and runs the appropriate test (`t-test`, `z-test`, or `chi2`), and returns a dictionary with test results and conclusion.
+- **Usage:**
+```python
+result = test_hypothesis(df, 'Gender', 'Male', 'Female', 'ClaimFrequency', test_type='z-test')
+print(result['conclusion'])
+```
+
+---
+
+## Example Workflow
+```python
+from scripts.hypothesis_testing import compute_metrics, test_hypothesis
+import pandas as pd
+
+df = pd.read_csv('../data/insurance_cleaned.csv')
+df = compute_metrics(df)
+
+# Test for risk difference between two provinces
+result = test_hypothesis(df, 'Province', 'Gauteng', 'Western Cape', 'ClaimFrequency', test_type='z-test')
+print(result['conclusion'])
+```
+
+---
+
+## Notes
+- All functions are modular and can be used independently or in a notebook workflow.
+- Designed for use in Jupyter notebooks or as part of automated analytics scripts.
+- Supports both numerical and categorical hypothesis testing relevant to insurance risk segmentation.
+- Results are suitable for business reporting and strategy development.
