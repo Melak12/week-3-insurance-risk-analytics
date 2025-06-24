@@ -351,4 +351,42 @@ class InsuranceAnalysis:
                 plt.close()
             else:
                 plt.show()
+    
+    def creative_insight_plots(self, save_plots=False, output_dir=None):
+        """
+        Produce 3 creative and beautiful plots that capture key insights from the EDA, using Plotly for interactivity where helpful.
+        """
+        import plotly.express as px
+        # 1. Interactive box plot: Distribution of TotalPremium by CoverType (Plotly, uncluttered)
+        if 'TotalPremium' in self.data.columns and 'CoverType' in self.data.columns:
+            fig = px.box(self.data, x='CoverType', y='TotalPremium', points='outliers',
+                         color='CoverType', title='Distribution of TotalPremium by CoverType (Interactive)')
+            fig.update_layout(xaxis_title='CoverType', yaxis_title='TotalPremium', showlegend=False)
+            fig.show()
+            if save_plots and output_dir:
+                fig.write_html(os.path.join(output_dir, 'plotly_box_totalpremium_by_covertype.html'))
+
+        # 2. Heatmap: Correlation between all numerical features (static, as before)
+        num_cols = self.data.select_dtypes(include=['int64', 'float64']).columns
+        if len(num_cols) > 1:
+            plt.figure(figsize=(10, 7))
+            corr = self.data[num_cols].corr()
+            sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
+            plt.title('Correlation Heatmap of Numerical Features')
+            plt.tight_layout()
+            if save_plots and output_dir:
+                plt.savefig(os.path.join(output_dir, 'correlation_heatmap.png'))
+                plt.close()
+            else:
+                plt.show()
+
+        # 3. Interactive bar plot: Top 10 Provinces by Average TotalClaims (faster, more insight)
+        if 'TotalClaims' in self.data.columns and 'Province' in self.data.columns:
+            province_avg = self.data.groupby('Province')['TotalClaims'].mean().sort_values(ascending=False).head(10).reset_index()
+            fig = px.bar(province_avg, x='Province', y='TotalClaims', color='TotalClaims',
+                         title='Top 10 Provinces by Average TotalClaims', text_auto='.2s')
+            fig.update_layout(xaxis_title='Province', yaxis_title='Avg TotalClaims', xaxis_tickangle=45)
+            fig.show()
+            if save_plots and output_dir:
+                fig.write_html(os.path.join(output_dir, 'plotly_bar_top10_province_totalclaims.html'))
 
