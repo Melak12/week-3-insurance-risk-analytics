@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score
+import shap
 
 '''
 This script is used to build and evaluate predictive models that form the core of a dynamic, risk-based pricing system.
@@ -205,6 +206,59 @@ class InsurancePredictionModel:
         importance_df = pd.DataFrame({'feature': feature_names, 'importance': importances})
         importance_df = importance_df.sort_values('importance', ascending=False).head(top_n)
         return importance_df.reset_index(drop=True)
+
+    def interpret_with_shap(self, model, X, feature_names=None, plot_type='summary', sample_size=100):
+        """
+        Interpret model predictions using SHAP (SHapley Additive exPlanations).
+        Uses shap.Explainer for all model types for compatibility.
+        plot_type: 'summary' for global, 'force' for local (first sample).
+        sample_size: number of samples to use for summary plot.
+        """
+        import shap
+        # Subsample for speed if needed
+        X_disp = X.iloc[:sample_size] if hasattr(X, 'iloc') else X[:sample_size]
+        explainer = shap.Explainer(model, X_disp)
+        shap_values = explainer(X_disp)
+        if plot_type == 'summary':
+            shap.summary_plot(shap_values, X_disp, feature_names=feature_names)
+        elif plot_type == 'force':
+            shap.initjs()
+            shap.force_plot(explainer.expected_value, shap_values[0], X_disp.iloc[0], feature_names=feature_names, matplotlib=True)
+        else:
+            raise ValueError('Unsupported plot_type. Use "summary" or "force".')
+
+    def interpret_with_lime(self, model, X, mode='regression', feature_names=None, sample_idx=0):
+        """
+        Interpret model predictions using LIME (Local Interpretable Model-agnostic Explanations).
+        mode: 'regression' or 'classification'
+        sample_idx: index of the sample to explain
+        """
+        from lime.lime_tabular import LimeTabularExplainer
+        import matplotlib.pyplot as plt
+        X_np = X.values if hasattr(X, 'values') else np.array(X)
+        explainer = LimeTabularExplainer(
+            X_np,
+            feature_names=feature_names if feature_names is not None else [f'feature_{i}' for i in range(X_np.shape[1])],
+            mode=mode,
+            discretize_continuous=True
+        )
+        exp = explainer.explain_instance(X_np[sample_idx], model.predict, num_features=10)
+        # Robust notebook display: try show_in_notebook, fallback to HTML display
+        try:
+            exp.show_in_notebook(show_table=True)
+        except ImportError:
+            try:
+                from IPython.display import display, HTML
+                display(HTML(exp.as_html()))
+            except Exception as e:
+                print(f"LIME explanation display failed: {e}\nFalling back to text output.")
+                print(exp.as_list())
+        # Optionally, also plot with white background for both figure and axes
+        fig = exp.as_pyplot_figure()
+        fig.patch.set_facecolor('white')  # Set figure background to white
+        for ax in fig.get_axes():
+            ax.set_facecolor('white')  # Set axes background to white
+        plt.show()
 
 """
 Example usage:
