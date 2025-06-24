@@ -187,6 +187,25 @@ class InsurancePredictionModel:
         else:
             return self.evaluate_classification(model, X_test, y_test, average=average)
 
+    def feature_importance(self, model, feature_names=None, top_n=20):
+        """
+        Analyze and return feature importances or coefficients for the model.
+        Supports tree-based models (feature_importances_) and linear models (coef_).
+        Returns a sorted DataFrame of feature and importance.
+        """
+        importances = None
+        if hasattr(model, 'feature_importances_'):
+            importances = model.feature_importances_
+        elif hasattr(model, 'coef_'):
+            importances = np.abs(model.coef_)
+        else:
+            raise ValueError('Model does not support feature importance extraction.')
+        if feature_names is None:
+            feature_names = [f'feature_{i}' for i in range(len(importances))]
+        importance_df = pd.DataFrame({'feature': feature_names, 'importance': importances})
+        importance_df = importance_df.sort_values('importance', ascending=False).head(top_n)
+        return importance_df.reset_index(drop=True)
+
 """
 Example usage:
 
